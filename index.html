@@ -19,7 +19,7 @@
       }
 
       .container {
-        width: 80%;
+        width: 100%;
         margin: 0 auto;
         background-color: #fff;
         padding: 30px;
@@ -57,7 +57,7 @@
 
       table {
         width: 100%;
-        margin-top: 30px;
+        margin-top: 20px;
         border-collapse: collapse;
         text-align: center;
       }
@@ -99,6 +99,23 @@
       .hidden {
         display: none;
       }
+
+      .tables-container {
+        margin-top: 30px;
+      }
+
+      h3 {
+        margin-top: 20px;
+        color: #333;
+        text-align: center;
+      }
+
+      .input-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        gap: 10px;
+      }
     </style>
   </head>
   <body>
@@ -111,38 +128,43 @@
 
     <div id="mainContent" class="container hidden">
       <h1>Overtime HC-03</h1>
-      <div>
+      <div class="input-container">
         <input type="number" id="employeeID" placeholder="Enter Employee ID" />
         <button onclick="getEmployeeDetails()">Search</button>
       </div>
 
-      <table id="employeeTable">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Overtime Hours</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Data will be displayed here -->
-        </tbody>
-      </table>
+      <div class="tables-container">
+        <!-- Summary Table -->
+        <h3>Total Details</h3>
+        <table id="summaryTable">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Name</th>
+              <th>ID</th>
+              <th>Total O.T</th>
+              <th>Total Days</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Summary data will be displayed here -->
+          </tbody>
+        </table>
 
-      <h3>Total Details</h3>
-      <table id="summaryTable">
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>Name</th>
-            <th>ID</th>
-            <th>Total O.T</th>
-            <th>Total Days</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Summary data will be displayed here -->
-        </tbody>
-      </table>
+        <!-- Daily Overtime Table -->
+        <h3>Daily Overtime Details</h3>
+        <table id="employeeTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Overtime Hours</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Data will be displayed here -->
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <script>
@@ -174,8 +196,8 @@
         const result = employees.find((emp) => emp.ID == empID);
 
         if (result) {
-          displayDailyOvertime(result);
           displaySummary(result);
+          displayDailyOvertime(result);
           document.getElementById("errorMessage").innerText = ""; // Clear error message
         } else {
           document.getElementById("errorMessage").innerText =
