@@ -82,7 +82,8 @@
         text-align: center;
         color: red;
         font-size: 18px;
-        margin-top: 20px;
+        margin-top: 10px;
+        font-weight: bold;
       }
 
       .password-container {
@@ -123,7 +124,7 @@
       <h2>Enter Password</h2>
       <input type="password" id="password" placeholder="Enter Password" />
       <button onclick="checkPassword()">Submit</button>
-      <div id="errorMessage" class="error-message"></div>
+      <div id="passwordErrorMessage" class="error-message"></div>
     </div>
 
     <div id="mainContent" class="container hidden">
@@ -132,9 +133,8 @@
         <input type="number" id="employeeID" placeholder="Enter Employee ID" />
         <button onclick="getEmployeeDetails()">Search</button>
       </div>
-
+      <div id="employeeErrorMessage" class="error-message"></div>
       <div class="tables-container">
-        <!-- Summary Table -->
         <h3>Total Details</h3>
         <table id="summaryTable">
           <thead>
@@ -146,12 +146,9 @@
               <th>Total Days</th>
             </tr>
           </thead>
-          <tbody>
-            <!-- Summary data will be displayed here -->
-          </tbody>
+          <tbody></tbody>
         </table>
 
-        <!-- Daily Overtime Table -->
         <h3>Daily Overtime Details</h3>
         <table id="employeeTable">
           <thead>
@@ -160,84 +157,84 @@
               <th>Overtime Hours</th>
             </tr>
           </thead>
-          <tbody>
-            <!-- Data will be displayed here -->
-          </tbody>
+          <tbody></tbody>
         </table>
       </div>
     </div>
 
     <script>
-      const correctPassword = "admin123"; // Set your password here
+      const correctPassword = "admin123";
 
-      // Function to check password
       function checkPassword() {
         const enteredPassword = document.getElementById("password").value;
+        const errorMessage = document.getElementById("passwordErrorMessage");
         if (enteredPassword === correctPassword) {
           document.getElementById("passwordContainer").classList.add("hidden");
           document.getElementById("mainContent").classList.remove("hidden");
+          errorMessage.innerText = ""; // Clear any previous error
         } else {
-          document.getElementById("errorMessage").innerText =
-            "Incorrect password! Please try again.";
+          errorMessage.innerText = "Incorrect password! Please try again.";
         }
       }
 
-      // Fetch employee data
       async function fetchEmployeeData() {
-        const response = await fetch("data.json");
-        const data = await response.json();
-        return data;
+        try {
+          const response = await fetch("data.json");
+          if (!response.ok) throw new Error("Data fetch failed");
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          console.error("Error fetching data:", error);
+          document.getElementById("employeeErrorMessage").innerText =
+            "Unable to fetch employee data. Please try again later.";
+        }
       }
 
-      // Function to get employee details
       async function getEmployeeDetails() {
-        const empID = document.getElementById("employeeID").value;
-        const employees = await fetchEmployeeData();
-        const result = employees.find((emp) => emp.ID == empID);
+        const empID = document.getElementById("employeeID").value.trim();
+        const errorMessage = document.getElementById("employeeErrorMessage");
 
+        if (!empID) {
+          errorMessage.innerText = "Please enter a valid Employee ID.";
+          clearTables();
+          return;
+        }
+
+        const employees = await fetchEmployeeData();
+        if (!employees) return;
+
+        const result = employees.find((emp) => emp.ID == empID);
         if (result) {
+          errorMessage.innerText = ""; // Clear any previous error
           displaySummary(result);
           displayDailyOvertime(result);
-          document.getElementById("errorMessage").innerText = ""; // Clear error message
         } else {
-          document.getElementById("errorMessage").innerText =
-            "Employee not found!";
+          errorMessage.innerText = "Employee not found!";
           clearTables();
         }
       }
 
-      // Function to display daily overtime data
       function displayDailyOvertime(employee) {
         const tableBody = document
           .getElementById("employeeTable")
           .getElementsByTagName("tbody")[0];
-
-        // Clear existing rows
         tableBody.innerHTML = "";
 
-        // Iterate over keys to find dates
         for (const key in employee) {
-          if (
-            key.includes("November") ||
-            key.includes("December") // Add more months if needed
-          ) {
+          if (key.includes("November") || key.includes("December")) {
             const row = tableBody.insertRow();
-            row.insertCell(0).textContent = key; // Date
-            row.insertCell(1).textContent = employee[key]; // Overtime hours
+            row.insertCell(0).textContent = key;
+            row.insertCell(1).textContent = employee[key];
           }
         }
       }
 
-      // Function to display employee summary
       function displaySummary(employee) {
         const summaryBody = document
           .getElementById("summaryTable")
           .getElementsByTagName("tbody")[0];
-
-        // Clear existing rows
         summaryBody.innerHTML = "";
 
-        // Add summary row
         const row = summaryBody.insertRow();
         row.insertCell(0).textContent = employee["No "];
         row.insertCell(1).textContent = employee["Name"];
@@ -246,7 +243,6 @@
         row.insertCell(4).textContent = employee["Total Day"];
       }
 
-      // Function to clear tables
       function clearTables() {
         document
           .getElementById("employeeTable")
