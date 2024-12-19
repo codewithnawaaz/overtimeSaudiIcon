@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Overtime Details</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+      }
+
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-top: 20px;
+      }
+
+      .container {
+        width: 80%;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 30px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        margin-top: 30px;
+      }
+
+      input[type="number"],
+      input[type="password"] {
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        width: 100%;
+        max-width: 250px;
+        box-sizing: border-box;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        border: none;
+        background-color: #4caf50;
+        color: white;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-left: 10px;
+        display: inline-block;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+
+      table {
+        width: 100%;
+        margin-top: 30px;
+        border-collapse: collapse;
+        text-align: center;
+      }
+
+      table th,
+      table td {
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        text-align: center;
+      }
+
+      table th {
+        background-color: #4caf50;
+        color: white;
+      }
+
+      table td {
+        background-color: #f9f9f9;
+      }
+
+      .error-message {
+        text-align: center;
+        color: red;
+        font-size: 18px;
+        margin-top: 20px;
+      }
+
+      .password-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 100px;
+      }
+
+      .password-container input {
+        margin-bottom: 15px;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="passwordContainer" class="password-container">
+      <h2>Enter Password</h2>
+      <input type="password" id="password" placeholder="Enter Password" />
+      <button onclick="checkPassword()">Submit</button>
+      <div id="errorMessage" class="error-message"></div>
+    </div>
+
+    <div id="mainContent" class="container hidden">
+      <h1>Overtime HC-03</h1>
+      <div>
+        <input type="number" id="employeeID" placeholder="Enter Employee ID" />
+        <button onclick="getEmployeeDetails()">Search</button>
+      </div>
+
+      <table id="employeeTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Overtime Hours</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data will be displayed here -->
+        </tbody>
+      </table>
+
+      <h3>Total Details</h3>
+      <table id="summaryTable">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Name</th>
+            <th>ID</th>
+            <th>Total O.T</th>
+            <th>Total Days</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Summary data will be displayed here -->
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      const correctPassword = "admin123"; // Set your password here
+
+      // Function to check password
+      function checkPassword() {
+        const enteredPassword = document.getElementById("password").value;
+        if (enteredPassword === correctPassword) {
+          document.getElementById("passwordContainer").classList.add("hidden");
+          document.getElementById("mainContent").classList.remove("hidden");
+        } else {
+          document.getElementById("errorMessage").innerText =
+            "Incorrect password! Please try again.";
+        }
+      }
+
+      // Fetch employee data
+      async function fetchEmployeeData() {
+        const response = await fetch("data.json");
+        const data = await response.json();
+        return data;
+      }
+
+      // Function to get employee details
+      async function getEmployeeDetails() {
+        const empID = document.getElementById("employeeID").value;
+        const employees = await fetchEmployeeData();
+        const result = employees.find((emp) => emp.ID == empID);
+
+        if (result) {
+          displayDailyOvertime(result);
+          displaySummary(result);
+          document.getElementById("errorMessage").innerText = ""; // Clear error message
+        } else {
+          document.getElementById("errorMessage").innerText =
+            "Employee not found!";
+          clearTables();
+        }
+      }
+
+      // Function to display daily overtime data
+      function displayDailyOvertime(employee) {
+        const tableBody = document
+          .getElementById("employeeTable")
+          .getElementsByTagName("tbody")[0];
+
+        // Clear existing rows
+        tableBody.innerHTML = "";
+
+        // Iterate over keys to find dates
+        for (const key in employee) {
+          if (
+            key.includes("November") ||
+            key.includes("December") // Add more months if needed
+          ) {
+            const row = tableBody.insertRow();
+            row.insertCell(0).textContent = key; // Date
+            row.insertCell(1).textContent = employee[key]; // Overtime hours
+          }
+        }
+      }
+
+      // Function to display employee summary
+      function displaySummary(employee) {
+        const summaryBody = document
+          .getElementById("summaryTable")
+          .getElementsByTagName("tbody")[0];
+
+        // Clear existing rows
+        summaryBody.innerHTML = "";
+
+        // Add summary row
+        const row = summaryBody.insertRow();
+        row.insertCell(0).textContent = employee["No "];
+        row.insertCell(1).textContent = employee["Name"];
+        row.insertCell(2).textContent = employee["ID"];
+        row.insertCell(3).textContent = employee["Total O.T"];
+        row.insertCell(4).textContent = employee["Total Day"];
+      }
+
+      // Function to clear tables
+      function clearTables() {
+        document
+          .getElementById("employeeTable")
+          .getElementsByTagName("tbody")[0].innerHTML = "";
+        document
+          .getElementById("summaryTable")
+          .getElementsByTagName("tbody")[0].innerHTML = "";
+      }
+    </script>
+  </body>
+</html>
